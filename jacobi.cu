@@ -2,25 +2,24 @@
 // Created by fran.
 //
 
-#include "jacobi.h"
+#include "jacobi.cuh"
+#include <reduce.cuh>
 
-__global__ void hello(){
-    printf("Hello!\n");
-}
+
 
 float jacobi::norma(const float *r) {
     float sum_cuadrados = 0;
-    for (size_t i = 0; i < getN(); i++) {
+    for (size_t i = 0; i < getFilas(); i++) {
         sum_cuadrados += pow(r[i], 2);
     }
     return sqrt(sum_cuadrados);
 }
 
 float *jacobi::calculaDiagonal() {
-    float *D = new float[matriz.N];
+    float *D = new float[matriz.filas];
     int fila = 0;
     int i = 0;
-    while (fila < getN()) {
+    while (fila < getFilas()) {
         if (matriz.row_ptr[fila] == matriz.row_ptr[fila + 1]) {
             D[fila] = 0;
             fila++;
@@ -35,18 +34,16 @@ float *jacobi::calculaDiagonal() {
     return D;
 }
 
-int jacobi::getN() {
-    return matriz.N;
+int jacobi::getFilas() {
+    return matriz.filas;
 }
 
 float *jacobi::getDiagonal() const {
-    hello<<<1,3>>>();
-    cudaDeviceSynchronize();
     return diagonal;
 }
 
 void jacobi::inversaDiagonal() {
-    for (size_t i = 0; i < getN(); i++) {
+    for (size_t i = 0; i < getFilas(); i++) {
         if (diagonal[i] != 0)
             inversa[i] = 1.0f / diagonal[i];
         else
@@ -62,4 +59,8 @@ void jacobi::diferencia(float *b, float *q, float *r, int n) {
     for (size_t i = 0; i < n; i++) {
         r[i] = b[i] - q[i];
     }
+}
+
+int jacobi::getColumnas() {
+    return matriz.columnas;
 }

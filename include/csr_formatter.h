@@ -14,7 +14,8 @@ struct CSR {
     vector<double> val;
     vector<int> col_ind;
     vector<int> row_ptr;
-    int N = 0;
+    int filas = 0;
+    int columnas = 0;
 };
 
 static void printArray(vector<int> v) {
@@ -33,12 +34,12 @@ static void printMatrix(CSR csr) {
 
     int cont = 0;
     for (int i = 1; i < csr.row_ptr.size(); i++) {
-        int row_start = csr.row_ptr[i - 1] - 1;
-        int row_end = csr.row_ptr[i] - 1;
+        int row_start = csr.row_ptr[i - 1];
+        int row_end = csr.row_ptr[i];
         vector<int>::const_iterator first = csr.col_ind.begin() + row_start;
         vector<int>::const_iterator last = csr.col_ind.begin() + row_end;
         vector<int> row(first, last);
-        for (int j = 1; j < csr.row_ptr.size(); j++) {
+        for (int j = 0; j < csr.row_ptr.size(); j++) {
             if (std::count(row.begin(), row.end(), j) == 0)
                 cout << '0' << ' ';
             else {
@@ -88,22 +89,24 @@ static CSR assemble_csr_matrix(std::istream &fin) {
     // Read defining parameters:
     fin >> M >> N >> L;
 
-    matrix.N = N;
+    matrix.filas = M;
+    matrix.columnas = N;
 
-    int last_row = 1;
-    matrix.row_ptr.push_back(1);
+    int last_row = 0;
+    matrix.row_ptr.push_back(0);
     for (int l = 0; l < L; l++) {
         int row, col;
         double data;
         fin >> row >> col >> data;
+        row = row - 1;
         matrix.col_ind.push_back(col - 1);
         matrix.val.push_back(data);
         if (row > last_row) {
             last_row = row;
-            matrix.row_ptr.push_back(matrix.col_ind.size());
+            matrix.row_ptr.push_back(matrix.col_ind.size() - 1);
         }
     }
-    matrix.row_ptr.push_back(matrix.col_ind.size() + 1);
+    matrix.row_ptr.push_back(matrix.col_ind.size());
     return matrix;
 }
 
