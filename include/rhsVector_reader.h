@@ -2,8 +2,8 @@
 // Created by fran.
 //
 
-#ifndef PRACTICA5_RHSVECTOR_READER_H
-#define PRACTICA5_RHSVECTOR_READER_H
+#ifndef RHSVECTOR_READER_H
+#define RHSVECTOR_READER_H
 #include <istream>
 using namespace std;
 template <typename type>
@@ -28,4 +28,4 @@ static type* rhsVector_reader(string file, int row){
 
     return b;
 }
-#endif //PRACTICA5_RHSVECTOR_READER_H
+#endif //RHSVECTOR_READER_H
