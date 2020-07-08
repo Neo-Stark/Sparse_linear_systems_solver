@@ -5,8 +5,8 @@ set(CMAKE_CUDA_STANDARD 14)
 
 find_package(CUDA)
 
-cuda_add_library(jacobi jacobi.cu jacobi.cuh reduce.cuh)
-cuda_add_executable(${PROJECT_NAME} main.cu)
+cuda_add_library(jacobi jacobi.cu jacobi.cuh)
+cuda_add_executable(${PROJECT_NAME} main.cu CSR.cpp)
 
 target_link_libraries(${PROJECT_NAME} jacobi ${CUDA_cusparse_LIBRARY})
 
