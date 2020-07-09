@@ -6,7 +6,6 @@
 #define JACOBI_H
 
 #include <CSR.h>
-#include <mv_multiplication.cuh>
 #include <cmath>
 
 using namespace std;

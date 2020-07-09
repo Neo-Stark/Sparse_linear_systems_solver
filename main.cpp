@@ -1,5 +1,5 @@
 #include <iostream>
-#include <jacobi.cuh>
+#include <jacobi.h>
 #include <rhsVector_reader.h>
 #include <cpu_seconds.h>
 #include <iomanip>

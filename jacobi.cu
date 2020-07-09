@@ -3,7 +3,9 @@
 // Copyright (c) 2020 Universidad de Granada. All rights reserved.
 //
 
-#include "jacobi.cuh"
+#include "jacobi.h"
+#include <kernels.cuh>
+
 
 jacobi::jacobi(const CSR &m, const int &block_size_arg) : x(m.getColumnas(), 1),
                                                           BLOCK_SIZE(block_size_arg),
