@@ -3,11 +3,13 @@ project(sistemas_lineales CUDA CXX)
 
 set(CMAKE_CUDA_STANDARD 14)
 
-find_package(CUDA)
+find_package(CUDA REQUIRED)
+find_package(OpenMP REQUIRED)
 
 cuda_add_library(jacobi jacobi.cu include/jacobi.h)
-cuda_add_executable(${PROJECT_NAME} main.cpp CSR.cpp)
+target_link_libraries(jacobi OpenMP::OpenMP_CXX)
 
+cuda_add_executable(${PROJECT_NAME} main.cpp CSR.cpp)
 target_link_libraries(${PROJECT_NAME} jacobi ${CUDA_cusparse_LIBRARY})
 
 include_directories(include/ .)
