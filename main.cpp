@@ -20,7 +20,8 @@ int main(int argc, char **argv) {
     double t1 = cpuSecond();
     while (k < K) {
         k++;
-        jacobi.multiplicacionMV_CUDA();
+        if ( jacobi.multiplicacionMV_CUDA()[98] - jacobi.multiplicacionMV_OMP()[98] < THRESHOLD)
+            cout << "k = " << k << " multiplicacion igual" << endl;
         jacobi::diferencia(b, jacobi.getY(), jacobi.getY(), jacobi.getFilas());
         if (jacobi.norma() <= THRESHOLD) break;
         jacobi.obtenerNuevaX();

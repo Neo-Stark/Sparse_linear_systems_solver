@@ -5,6 +5,7 @@
 
 #include "jacobi.h"
 #include <kernels.cuh>
+#include <omp.h>
 
 
 jacobi::jacobi(const CSR &m, const int &block_size_arg) : x(m.getColumnas(), 1),
@@ -125,7 +126,18 @@ double jacobi::getInversa(int i) {
 }
 
 double *jacobi::multiplicacionMV_OMP() {
-
+    #pragma omp parallel
+    {
+        #pragma omp for
+        for (int i = 0; i < getFilas(); i++) {
+            const unsigned int row_start = matriz.getRowPtr()[i];
+            const unsigned int row_end = matriz.getRowPtr()[i + 1];
+            y[i] = 0;
+            for (auto j = row_start; j < row_end; j++) {
+                y[i] += matriz.getVal()[j] * x[matriz.getColInd()[j]];
+            }
+        }
+    };
     return y;
 }
 
