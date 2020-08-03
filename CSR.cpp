@@ -14,6 +14,7 @@ CSR::CSR(istream &fin) {
     while (fin.peek() == '%') fin.ignore(2048, '\n');
     // Read defining parameters:
     fin >> M >> N >> L;
+    cout << "L: " << L << endl;
 
     filas = M;
     columnas = N;
@@ -33,6 +34,8 @@ CSR::CSR(istream &fin) {
         }
     }
     row_ptr.push_back(col_ind.size());
+    cout << "row_ptr.size: " << row_ptr.size() << endl;
+    cout << "col_ind.size: " << col_ind.size() << endl;
 }
 
 void CSR::printMatrix() {
@@ -43,7 +46,7 @@ void CSR::printMatrix() {
         vector<int>::const_iterator first = col_ind.begin() + row_start;
         vector<int>::const_iterator last = col_ind.begin() + row_end;
         vector<int> row(first, last);
-        for (int j = 0; j < row_ptr.size(); j++) {
+        for (int j = 0; j < row_ptr.size() - 1; j++) {
             if (count(row.begin(), row.end(), j) == 0)
                 cout << '0' << ' ';
             else {
@@ -111,4 +114,19 @@ int CSR::getFilas() const {
 
 int CSR::getColumnas() const {
     return columnas;
+}
+
+bool CSR::isDiagonallyDominant() {
+    bool sol = true;
+    double d, sum = 0;
+    for(int i = 0; sol && i < filas; i++){
+        for (int j = row_ptr[i]; j < row_ptr[i+1]; ++j) {
+            if(col_ind[j] == i) d = val[j];
+            else sum += val[j];
+        }
+        if (sum > d) sol = false;
+        sum = 0;
+    };
+
+    return sol;
 }

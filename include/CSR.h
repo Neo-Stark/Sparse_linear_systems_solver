@@ -31,6 +31,8 @@ public:
 
     int getBandwidth();
 
+    bool isDiagonallyDominant();
+
     const vector<double> &getVal() const;
 
     const vector<int> &getColInd() const;
