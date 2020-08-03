@@ -12,7 +12,9 @@ using namespace std;
 
 class jacobi {
 public:
-    jacobi(const CSR &m, const int &block_size_arg);
+    explicit jacobi(const CSR &m, const vector<double> &aprox_inicial, const int &block_size_arg = 256);
+
+    explicit jacobi(const CSR &m, const int &block_size_arg = 256);
 
     ~jacobi();
 
@@ -20,11 +22,15 @@ public:
 
     void obtenerNuevaX();
 
+    void actualizaX();
+
     double *multiplicacionMV_OMP();
 
     double norma();
 
-    static void diferencia(const double *b, const double *q, double *r, int n);
+    double normaInfinito_r();
+
+    void calculaResiduo(const double *b);
 
     int getFilas();
 
@@ -46,19 +52,26 @@ public:
 
     double &getX(int i);
 
+    double *getR() const;
+
+    double getR(int i);
+
 private:
     double *inversaDiagonal();
 
     double *calculaDiagonal();
 
+    double reduce_max_CUDA(const double *d_vi, int n) const;
+
     CSR matriz;
     double *diagonal;
     double *inversa;
     double *y;
+    double *r;
     vector<double> x;
 
     // Punteros a memoria en GPU
-    double *A{}, *x_d{}, *y_d{}, *inversa_diag{};
+    double *A{}, *x_d{}, *y_d{}, *inversa_diag{}, *r_d{};
     unsigned int *col_ind{}, *row_ptr{};
 
     const int BLOCK_SIZE;
