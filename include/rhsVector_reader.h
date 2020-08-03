@@ -4,28 +4,31 @@
 
 #ifndef RHSVECTOR_READER_H
 #define RHSVECTOR_READER_H
+
 #include <istream>
+#include <fstream>
+#include <algorithm>
+
 using namespace std;
-template <typename type>
-static type* rhsVector_reader(string file, int row){
-    type *b = new type[row];
-    FILE *fp = fopen(file.c_str(), "r");
+
+template<typename T>
+static T *rhsVector_reader(string file, int row) {
+    T *b = new T[row];
+    fstream fin(file);
     int count = 0;
-    double n = 0;
-    while (fscanf(fp, "%lf", &n) != -1) {
-        count++;
-    }
+    count = std::count(std::istreambuf_iterator<char>(fin),
+                  std::istreambuf_iterator<char>(), '\n');
+    fin.seekg(0);
 
     if (row != count) {
         printf("Dimensions do not match.\nCode Terminated");
         abort();
     }
-    fseek(fp, 0, SEEK_SET);
     for (int i = 0; i < row; i++) {
-        fscanf(fp, "%lf", &b[i]);
+        fin >> b[i];
     }
-    fclose(fp);
-
+    fin.close();
     return b;
 }
+
 #endif //RHSVECTOR_READER_H
