@@ -6,11 +6,18 @@ set(CMAKE_CUDA_STANDARD 14)
 find_package(CUDA REQUIRED)
 find_package(OpenMP REQUIRED)
 
-cuda_add_library(jacobi jacobi.cu include/jacobi.h)
+add_library(jacobi jacobi.cu)
 target_link_libraries(jacobi OpenMP::OpenMP_CXX)
+IF (OPENMP_FOUND)
+    SET(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=${OpenMP_CXX_FLAGS}")
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+ENDIF()
 
-cuda_add_executable(${PROJECT_NAME} main.cpp CSR.cpp)
+add_executable(${PROJECT_NAME} main.cpp CSR.cpp)
 target_link_libraries(${PROJECT_NAME} jacobi ${CUDA_cusparse_LIBRARY})
+
+add_executable(test tests.cu CSR.cpp)
+target_link_libraries(test jacobi ${CUDA_cusparse_LIBRARY})
 
 include_directories(include/ .)
 
