@@ -20,7 +20,7 @@ public:
 
     double *multiplicacionMV_CUDA();
 
-    void obtenerNuevaX();
+    virtual void obtenerNuevaX();
 
     void actualizaX();
 
@@ -56,12 +56,13 @@ public:
 
     double getR(int i);
 
-private:
+    double reduce_max_CUDA(const double *d_vi, int n) const;
+
+protected:
     double *inversaDiagonal();
 
     double *calculaDiagonal();
 
-    double reduce_max_CUDA(const double *d_vi, int n) const;
 
     CSR matriz;
     double *diagonal;
@@ -71,7 +72,7 @@ private:
     vector<double> x;
 
     // Punteros a memoria en GPU
-    double *A{}, *x_d{}, *y_d{}, *inversa_diag{}, *r_d{};
+    double *A{}, *x_d{}, *y_d{}, *inversa_d{}, *r_d{};
     unsigned int *col_ind{}, *row_ptr{};
 
     const int BLOCK_SIZE;

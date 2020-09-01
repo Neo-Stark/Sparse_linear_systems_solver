@@ -24,12 +24,12 @@ jacobi::jacobi(const CSR &m, const vector<double> &aprox_inicial, const int &blo
     cudaMalloc(&row_ptr, sizeof(int) * matriz.getRowPtr().size());
     cudaMalloc(&x_d, sizeof(double) * getFilas());
     cudaMalloc(&y_d, sizeof(double) * getFilas());
-    cudaMalloc(&inversa_diag, sizeof(double) * getFilas());
+    cudaMalloc(&inversa_d, sizeof(double) * getFilas());
 
     cudaMemcpy(A, matriz.getVal().data(), matriz.getVal().size() * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(col_ind, matriz.getColInd().data(), matriz.getColInd().size() * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(row_ptr, matriz.getRowPtr().data(), matriz.getRowPtr().size() * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(inversa_diag, inversa, getFilas() * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(inversa_d, inversa, getFilas() * sizeof(double), cudaMemcpyHostToDevice);
 }
 
 jacobi::jacobi(const CSR &m, const int &block_size_arg) :
@@ -81,7 +81,7 @@ double *jacobi::getInversa() const {
 
 void jacobi::calculaResiduo(const double *b) {
     for (int i = 0; i < getFilas(); i++) {
-        r[i] = b[i] - y[i];
+        r[i] = (b[i] - y[i]) * getInversa(i);
     }
 }
 
@@ -97,7 +97,7 @@ double *jacobi::multiplicacionMV_CUDA() {
 
     cudaMemcpy(x_d, x.data(), getColumnas() * sizeof(double), cudaMemcpyHostToDevice);
 
-    csr_spmv_vector_kernel<double><<<grid_size, block_size>>>(getFilas(), col_ind, row_ptr, A, x_d, y_d);
+    matrix_vector_multiplication<double><<<grid_size, block_size>>>(A, col_ind, row_ptr, x_d, y_d, getFilas());
 
     cudaMemcpy(y, y_d, getFilas() * sizeof(double), cudaMemcpyDeviceToHost);
 
@@ -125,15 +125,18 @@ double jacobi::getInversa(int i) {
 }
 
 double *jacobi::multiplicacionMV_OMP() {
-#pragma omp parallel num_threads(4)
-    cout << "multiplicando - Hebra " << omp_get_thread_num() << endl;
+#pragma omp parallel
+    {
+
+        cout << "multiplicando - Hebra " << omp_get_thread_num() << endl;
 #pragma omp for
-    for (int i = 0; i < getFilas(); i++) {
-        const unsigned int row_start = matriz.getRowPtr()[i];
-        const unsigned int row_end = matriz.getRowPtr()[i + 1];
-        y[i] = 0;
-        for (auto j = row_start; j < row_end; j++) {
-            y[i] += matriz.getVal()[j] * x[matriz.getColInd()[j]];
+        for (int i = 0; i < getFilas(); i++) {
+            const unsigned int row_start = matriz.getRowPtr()[i];
+            const unsigned int row_end = matriz.getRowPtr()[i + 1];
+            y[i] = 0;
+            for (auto j = row_start; j < row_end; j++) {
+                y[i] += matriz.getVal()[j] * x[matriz.getColInd()[j]];
+            }
         }
     }
     return y;
@@ -143,12 +146,8 @@ void jacobi::obtenerNuevaX() {
     dim3 block_size(BLOCK_SIZE);
     dim3 grid_size{};
     grid_size.x = (getFilas() + block_size.x - 1) / block_size.x;
-//    cout << "r: ";
-//    for(int i = 0; i < getFilas(); i++) cout << r[i] << " ";
-//    cout << endl;
     cudaMemcpy(r_d, r, getFilas() * sizeof(double), cudaMemcpyHostToDevice);
-
-    kernelNuevaX<double><<<grid_size, block_size>>>(x.size(), x_d, r_d, inversa_diag);
+    nuevaX<double><<<grid_size, block_size>>>(x.size(), x_d, r_d);
 }
 
 void jacobi::actualizaX() {
@@ -157,11 +156,11 @@ void jacobi::actualizaX() {
 
 double jacobi::normaInfinito_r() {
     double r_max = reduce_max_CUDA(r_d, getFilas());
-    cout << "r_max: " << r_max << endl;
     double x_max = reduce_max_CUDA(x_d, getFilas());
-    cout << "x_max: " << x_max << endl;
     double norma = r_max / x_max;
-    cout << " norma: " << norma << endl;
+//    cout << "r_max: " << r_max;
+//    cout << "  x_max: " << x_max << endl;
+//    cout << " norma: " << norma << endl;
     return norma;
 }
 
@@ -176,33 +175,34 @@ jacobi::~jacobi() {
     cudaFree(r_d);
     cudaFree(col_ind);
     cudaFree(row_ptr);
-    cudaFree(inversa_diag);
+    cudaFree(inversa_d);
 }
 
 double jacobi::reduce_max_CUDA(const double *d_vi, const int n) const {
     dim3 block(BLOCK_SIZE);
-    dim3 grid = (n / 2 + block.x - 1) / block.x;
+    dim3 grid = (n / 2 + block.x) / block.x;
+//    dim3 grid = 64;
     auto smemSize = block.x * sizeof(double);
     double *d_vo, *h_vo = new double[grid.x];
     cudaMalloc(&d_vo, sizeof(double) * grid.x);
     switch (BLOCK_SIZE) {
         case 1024:
-            reduce_max<double, 1024><<< grid, block, smemSize >>>(d_vi, d_vo, n);
+            reduction_max<double, 1024><<< grid, block, smemSize >>>(d_vi, d_vo, n);
             break;
         case 512:
-            reduce_max<double, 512><<< grid, block, smemSize >>>(d_vi, d_vo, n);
+            reduction_max<double, 512><<< grid, block, smemSize >>>(d_vi, d_vo, n);
             break;
         case 256:
-            reduce_max<double, 256><<< grid, block, smemSize >>>(d_vi, d_vo, n);
+            reduction_max<double, 256><<< grid, block, smemSize >>>(d_vi, d_vo, n);
             break;
         case 128:
-            reduce_max<double, 128><<< grid, block, smemSize >>>(d_vi, d_vo, n);
+            reduction_max<double, 128><<< grid, block, smemSize >>>(d_vi, d_vo, n);
             break;
         case 64:
-            reduce_max<double, 64><<< grid, block, smemSize >>>(d_vi, d_vo, n);
+            reduction_max<double, 64><<< grid, block, smemSize >>>(d_vi, d_vo, n);
             break;
         case 32:
-            reduce_max<double, 32><<< grid, block, smemSize >>>(d_vi, d_vo, n);
+            reduction_max<double, 32><<< grid, block, smemSize >>>(d_vi, d_vo, n);
             break;
     }
     cudaMemcpy(h_vo, d_vo, sizeof(double) * grid.x, cudaMemcpyDeviceToHost);
