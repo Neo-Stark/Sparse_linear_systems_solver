@@ -9,12 +9,16 @@
 #include <algorithm>
 
 CSR::CSR(istream &fin) {
+    if (!fin.good()){
+        cout << "error al abrir fichero...Abortando\n";
+        abort();
+    }
+    fin.seekg(0);
     int M, N, L;
     // Ignore headers and comments:
     while (fin.peek() == '%') fin.ignore(2048, '\n');
     // Read defining parameters:
     fin >> M >> N >> L;
-    cout << "L: " << L << endl;
 
     filas = M;
     columnas = N;
@@ -34,13 +38,14 @@ CSR::CSR(istream &fin) {
         }
     }
     row_ptr.push_back(col_ind.size());
-    cout << "row_ptr.size: " << row_ptr.size() << endl;
-    cout << "col_ind.size: " << col_ind.size() << endl;
+    calculaDiagonal();
 }
 
 void CSR::printMatrix() {
     int cont = 0;
+    cout << "{";
     for (int i = 1; i < row_ptr.size(); i++) {
+        cout << "{";
         int row_start = row_ptr[i - 1];
         int row_end = row_ptr[i];
         vector<int>::const_iterator first = col_ind.begin() + row_start;
@@ -48,14 +53,15 @@ void CSR::printMatrix() {
         vector<int> row(first, last);
         for (int j = 0; j < row_ptr.size() - 1; j++) {
             if (count(row.begin(), row.end(), j) == 0)
-                cout << '0' << ' ';
+                cout << '0' << ", ";
             else {
-                cout << val[cont] << ' ';
+                cout << val[cont] << ", ";
                 cont++;
             }
         }
-        std::cout << std::endl;
+        std::cout << "\b\b}" << std::endl;
     }
+    std::cout << "\b}" << std::endl;
 }
 
 int CSR::getDegree(int vertex) {
@@ -119,9 +125,9 @@ int CSR::getColumnas() const {
 bool CSR::isDiagonallyDominant() {
     bool sol = true;
     double d, sum = 0;
-    for(int i = 0; sol && i < filas; i++){
-        for (int j = row_ptr[i]; j < row_ptr[i+1]; ++j) {
-            if(col_ind[j] == i) d = val[j];
+    for (int i = 0; sol && i < filas; i++) {
+        for (int j = row_ptr[i]; j < row_ptr[i + 1]; ++j) {
+            if (col_ind[j] == i) d = val[j];
             else sum += val[j];
         }
         if (sum > d) sol = false;
@@ -129,4 +135,17 @@ bool CSR::isDiagonallyDominant() {
     };
 
     return sol;
+}
+
+void CSR::calculaDiagonal() {
+    for (int i = 0; i < getFilas(); i++) {
+        diagonal.push_back(0.0);
+        for (int j = getRowPtr()[i]; j < getRowPtr()[i + 1]; ++j) {
+            if (getColInd()[j] == i) diagonal[i] = getVal()[j];
+        }
+    }
+}
+
+const vector<double> &CSR::getDiagonal() const {
+    return diagonal;
 }

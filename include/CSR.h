@@ -15,13 +15,17 @@ class CSR {
     vector<double> val;
     vector<int> col_ind;
     vector<int> row_ptr;
+    vector<double> diagonal;
     int filas = 0;
     int columnas = 0;
 
+    void calculaDiagonal();
 public:
     explicit CSR(istream &fin);
 
     CSR(const CSR &m);
+
+    const vector<double> &getDiagonal() const;
 
     void printMatrix();
 
