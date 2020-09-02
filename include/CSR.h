@@ -20,6 +20,8 @@ class CSR {
     int columnas = 0;
 
     void calculaDiagonal();
+
+    void precondicionar_con_diagonal();
 public:
     explicit CSR(istream &fin);
 

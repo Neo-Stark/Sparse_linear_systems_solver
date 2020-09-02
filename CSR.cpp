@@ -7,6 +7,7 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
+#include "fstream"
 
 CSR::CSR(istream &fin) {
     if (!fin.good()) {
@@ -45,6 +46,18 @@ CSR::CSR(istream &fin) {
         row_ptr.push_back(col_ind.size());
     }
     calculaDiagonal();
+    precondicionar_con_diagonal();
+//
+//    ofstream ofile("matriz-4x4.mtx");
+//    ofile << filas << ' ' << columnas << ' ' << L << endl;
+//    for (auto columna = 0; columna < columnas; columna++) {
+//        for (int l = 0; l < L; l++) {
+//            if (col_cord[l] == columna) {
+//                ofile << row_cord[l] + 1 << ' ' << col_cord[l] + 1 << ' ' << val_cord[l] << endl;
+//            }
+//        }
+//    }
+//    ofile.close();
 }
 
 void CSR::printMatrix() {
@@ -154,4 +167,10 @@ void CSR::calculaDiagonal() {
 
 const vector<double> &CSR::getDiagonal() const {
     return diagonal;
+}
+
+void CSR::precondicionar_con_diagonal() {
+    for (auto fila = 0; fila < filas; fila++)
+        for (auto i = row_ptr[fila]; i < row_ptr[fila + 1]; i++)
+            val[i] = val[i] / getDiagonal()[fila];
 }
