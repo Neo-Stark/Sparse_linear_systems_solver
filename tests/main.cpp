@@ -24,14 +24,14 @@ void mul_matriz_vector_sec() {
 }
 
 void reduction_omp() {
-    vector<int> enteros(12);
-    for (int i = 0; i < enteros.size(); i++) enteros[i] = i;
+    vector<int> v(12);
+    for (int i = 0; i < v.size(); i++) v[i] = i;
     int maximo = 0;
 #pragma omp parallel
     {
 #pragma omp for reduction (max : maximo)
-        for (int i = 0; i < enteros.size(); i++) {
-            maximo = max(maximo, enteros[i]);
+        for (int i = 0; i < v.size(); i++) {
+            maximo = max(maximo, v[i]);
         }
 #pragma omp master
         cout << "maximo : " << maximo << " hebra: " << omp_get_thread_num() << endl;
@@ -46,6 +46,6 @@ int main(int argc, char **argv) {
 //    jacobi_clasico();
 //    srj_secuencial();
 //    test_multiplicacion_cuda();
-    test_reduce_max();
-
+//    test_reduce_max();
+//    test_constructor_csr();
 }

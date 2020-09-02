@@ -57,3 +57,19 @@ void test_inversa() {
 
     cout << "Inversa calculada correctamente" << endl;
 }
+
+void test_constructor_csr() {
+    ifstream file("../data/pores_1.mtx");
+    CSR matriz(file);
+    matriz.printMatrix();
+
+    cout << "row_ptr: ";
+    for (auto row_ptr : matriz.getRowPtr()) cout << row_ptr << " ";
+    cout << endl;
+    cout << "col_ind: ";
+    for (auto col_ind : matriz.getColInd()) cout << col_ind << " ";
+    cout << endl;
+    cout << "val: ";
+    for (auto val : matriz.getVal()) cout << val << " ";
+    cout << endl;
+}

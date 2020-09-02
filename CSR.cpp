@@ -9,7 +9,7 @@
 #include <algorithm>
 
 CSR::CSR(istream &fin) {
-    if (!fin.good()){
+    if (!fin.good()) {
         cout << "error al abrir fichero...Abortando\n";
         abort();
     }
@@ -23,21 +23,27 @@ CSR::CSR(istream &fin) {
     filas = M;
     columnas = N;
 
-    int last_row = 0;
-    row_ptr.push_back(0);
+    int row, col;
+    double data;
+    vector<int> col_cord, row_cord;
+    vector<double> val_cord;
     for (int l = 0; l < L; l++) {
-        int row, col;
-        double data;
         fin >> row >> col >> data;
-        row = row - 1;
-        col_ind.push_back(col - 1);
-        val.push_back(data);
-        if (row > last_row) {
-            last_row = row;
-            row_ptr.push_back(col_ind.size() - 1);
-        }
+        row_cord.push_back(row - 1);
+        col_cord.push_back(col - 1);
+        val_cord.push_back(data);
     }
-    row_ptr.push_back(col_ind.size());
+
+    row_ptr.push_back(0);
+    for (int fila = 0; fila < filas; fila++) {
+        for (int l = 0; l < L; l++) {
+            if (row_cord[l] == fila) {
+                col_ind.push_back(col_cord[l]);
+                val.push_back(val_cord[l]);
+            }
+        }
+        row_ptr.push_back(col_ind.size());
+    }
     calculaDiagonal();
 }
 

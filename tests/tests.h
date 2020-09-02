@@ -26,4 +26,7 @@ void test_multiplicacion_cuda();
 
 void test_reduce_max();
 
+//test CSR
+void test_constructor_csr();
+
 #endif //SISTEMAS_LINEALES_TESTS_H
