@@ -39,8 +39,9 @@ void reduction_omp() {
 }
 
 int main(int argc, char **argv) {
-//    test_jacobi();
 //    jacobi_secuencial();
+    test_jacobi_OMP();
+//    test_jacobi_CUDA();
 //    SOR_CSR();
 //    SOR();
 //    jacobi_clasico();
