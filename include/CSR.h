@@ -18,12 +18,13 @@ class CSR {
     vector<double> diagonal;
     int filas = 0;
     int columnas = 0;
+    bool precondicion = false;
 
     void calculaDiagonal();
 
     void precondicionar_con_diagonal();
 public:
-    explicit CSR(istream &fin);
+    explicit CSR(istream &fin, bool precondicionar = false);
 
     CSR(const CSR &m);
 
@@ -48,6 +49,8 @@ public:
     int getFilas() const;
 
     int getColumnas() const;
+
+    bool isPrecondicionada();
 
 };
 
