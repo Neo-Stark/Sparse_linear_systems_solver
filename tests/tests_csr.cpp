@@ -59,7 +59,7 @@ void test_inversa() {
 }
 
 void test_constructor_csr() {
-    ifstream file("../data/pores_1.mtx");
+    ifstream file("../data/cage5.mtx");
     CSR matriz(file);
     matriz.printMatrix();
 

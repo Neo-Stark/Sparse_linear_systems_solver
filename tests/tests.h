@@ -7,7 +7,9 @@
 #define SISTEMAS_LINEALES_TESTS_H
 
 // tests_jacobi
-void test_jacobi();
+void test_jacobi_CUDA();
+
+void test_jacobi_OMP();
 
 void jacobi_secuencial();
 

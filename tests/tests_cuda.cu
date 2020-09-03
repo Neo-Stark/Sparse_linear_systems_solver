@@ -67,37 +67,37 @@ void test_reduce_max_wrapper(double *h_v, int n) {
     t1 = cpuSecond();
     auto maximo = test32.reduce_max_CUDA(d_vi, n);
     t2 = cpuSecond() - t1;
-    cout << "test32   - Máximo: " << maximo << " tiempo" << t2 << endl;
+    cout << "test32   - Máximo: " << maximo << " tiempo " << t2 << endl;
 
     jacobi test64(CSR(m._1), 64);
     t1 = cpuSecond();
     maximo = test64.reduce_max_CUDA(d_vi, n);
     t2 = cpuSecond() - t1;
-    cout << "test64   - Máximo: " << maximo << " tiempo" << t2 << endl;
+    cout << "test64   - Máximo: " << maximo << " tiempo " << t2 << endl;
 
     jacobi test128(CSR(m._1), 128);
     t1 = cpuSecond();
     maximo = test128.reduce_max_CUDA(d_vi, n);
     t2 = cpuSecond() - t1;
-    cout << "test128  - Máximo: " << maximo << " tiempo" << t2 << endl;
+    cout << "test128  - Máximo: " << maximo << " tiempo " << t2 << endl;
 
     jacobi test256(CSR(m._1), 256);
     t1 = cpuSecond();
     maximo = test256.reduce_max_CUDA(d_vi, n);
     t2 = cpuSecond() - t1;
-    cout << "test256  - Máximo: " << maximo << " tiempo" << t2 << endl;
+    cout << "test256  - Máximo: " << maximo << " tiempo " << t2 << endl;
 
     jacobi test512(CSR(m._1), 512);
     t1 = cpuSecond();
     maximo = test512.reduce_max_CUDA(d_vi, n);
     t2 = cpuSecond() - t1;
-    cout << "test512  - Máximo: " << maximo << " tiempo" << t2 << endl;
+    cout << "test512  - Máximo: " << maximo << " tiempo " << t2 << endl;
 
     jacobi test1024(CSR(m._1), 1024);
     t1 = cpuSecond();
     maximo = test1024.reduce_max_CUDA(d_vi, n);
     t2 = cpuSecond() - t1;
-    cout << "test1024 - Máximo: " << maximo << " tiempo" << t2 << endl;
+    cout << "test1024 - Máximo: " << maximo << " tiempo " << t2 << endl;
 
     cudaFree(d_vi);
 }
@@ -106,7 +106,7 @@ void test_reduce_max() {
     int select = 0;
     switch (select) {
         case 0: {
-            auto n = 32000001;
+            auto n = 675;
             auto h_v = new double[n];
             for (int i = 0; i < n; i++) {
                 h_v[i] = 2e2 + i + 1.5;
@@ -123,6 +123,13 @@ void test_reduce_max() {
         case 2: {
             double x[4] = {-0.5, 1.18182, -2.1, 0.625};
             test_reduce_max_wrapper(x, 4);
+            break;
+        }
+        case 3: {
+            ifstream fv("../vector675");
+            double *x = new double[675];
+            if (fv.is_open()) for (int i = 0; i < 675; i++) fv >> x[i];
+            test_reduce_max_wrapper(x, 675);
             break;
         }
     }
