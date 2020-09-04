@@ -7,6 +7,7 @@
 #include <CSR.h>
 #include <iostream>
 #include <jacobi.h>
+#include "omp.h"
 
 void test_multiplacion_omp() {
     CSR matriz(m._2);
@@ -16,4 +17,19 @@ void test_multiplacion_omp() {
     cout << "y(): ";
     for (int i = 0; i < test.getFilas(); i++) cout << y[i] << " ";
     cout << endl;
+}
+
+void reduction_omp() {
+    vector<int> v(12);
+    for (int i = 0; i < v.size(); i++) v[i] = i;
+    int maximo = 0;
+#pragma omp parallel
+    {
+#pragma omp for reduction (max : maximo)
+        for (int i = 0; i < v.size(); i++) {
+            maximo = max(maximo, v[i]);
+        }
+#pragma omp master
+        cout << "maximo : " << maximo << " hebra: " << omp_get_thread_num() << endl;
+    }
 }

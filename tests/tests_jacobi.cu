@@ -24,51 +24,45 @@ void printResult(int k, const double *_x, const double *_y, const double *_b, in
     cout << "Iteraciones K: " << k << endl << endl;
 }
 
-void test_jacobi_CUDA() {
+void test_jacobi_CUDA(string _matriz, string _rhs, string _x0) {
     cout << "Test Jacobi CUDA *****///\n"
          << "BLOCKSIZE: " << BLOCKSIZE << endl;
-    fstream fs("../data/matrix-193x65.mtx");
+    fstream fs(_matriz);
     CSR matriz(fs);
-    cout << "Es diagonal dominante: " << (matriz.isDiagonallyDominant() ? "true" : "false") << endl;
-    auto _b = rhsVector_reader<double>("../data/rhs-193x65.dat", matriz.getFilas());
-    double *_x_k = rhsVector_reader<double>("../x0/x0-193x65.dat", matriz.getFilas());
+    auto _b = rhsVector_reader<double>(_rhs, matriz.getFilas());
+    double *_x_k = rhsVector_reader<double>(_x0, matriz.getFilas());
 
 //    double *_b = new double[matriz.getFilas()];
 //    for (int i = 0; i < matriz.getFilas(); i++) _b[i] = 1;
 //    CSR matriz(m._4);
 //    double *_b = b._4_5;
-    for (int i = 2; i < 64; i = i << 1) {
-        cout << "BLOCK SIZE: " << BLOCKSIZE * i << endl;
-        jacobi test(matriz, vector<double>(_x_k, _x_k + matriz.getFilas()), BLOCKSIZE * i);
-        int iter = 0;
-        double residual = 1e36;
-        while (residual > 1e-8) {
-            test.multiplicacionMV_CUDA();
-            test.calculaResiduo(_b);
-            test.obtenerNuevaX();
-            residual = test.norma_CUDA();
-            test.actualizaX();
-            if (iter % 1000 == 0) cout << "residual: " << residual << endl;
+    int i = 4;
+//    for (; i < 64; i = i << 1) {
+//        cout << "BLOCK SIZE: " << BLOCKSIZE * i << endl;
+    jacobi test(matriz, vector<double>(_x_k, _x_k + matriz.getFilas()), BLOCKSIZE * i);
+    int iter = 0;
+    double residual = 1e36;
+    while (residual > 1e-8) {
+        test.multiplicacionMV_CUDA();
+        test.calculaResiduo(_b);
+        test.obtenerNuevaX();
+        residual = test.norma_CUDA();
+        test.actualizaX();
+        if (iter % 1000 == 0) cout << "residual: " << residual << endl;
             iter++;
         }
-        cout << "iteraciones: " << iter << endl;
+//        cout << "iteraciones: " << iter << endl;
         printResult(iter, test.getX().data(), test.getY(), _b, matriz.getFilas());
     }
-}
+//}
 
-void test_jacobi_OMP() {
-    cout << "Test Jacobi CUDA *****///\n"
-         << "BLOCKSIZE: " << BLOCKSIZE << endl;
-    fstream fs("../data/matrix-65x65.mtx");
+void test_jacobi_OMP(string _matriz, string _rhs, string _x0) {
+    cout << "Test Jacobi OMP *****///\n";
+    fstream fs(_matriz);
     CSR matriz(fs);
-    cout << "Es diagonal dominante: " << (matriz.isDiagonallyDominant() ? "true" : "false") << endl;
-    auto _b = rhsVector_reader<double>("../data/rhs-65x65.dat", matriz.getFilas());
-    double *_x_k = rhsVector_reader<double>("../x0/x0-65x65.dat", matriz.getFilas());
+    auto _b = rhsVector_reader<double>(_rhs, matriz.getFilas());
+    double *_x_k = rhsVector_reader<double>(_x0, matriz.getFilas());
 
-//    double *_b = new double[matriz.getFilas()];
-//    for (int i = 0; i < matriz.getFilas(); i++) _b[i] = 1;
-//    CSR matriz(m._4);
-//    double *_b = b._4_5;
     jacobi test(matriz, vector<double>(_x_k, _x_k + matriz.getFilas()), BLOCKSIZE);
     int iter = 0;
     double residual = 1e36;
@@ -86,18 +80,15 @@ void test_jacobi_OMP() {
 }
 
 
-void jacobi_secuencial() {
+void jacobi_secuencial(string _matriz, string _rhs, string _x0) {
     cout << "Jacobi secuencial*****//" << endl;
-    fstream fs("../data/matriz.mtx");
-    ofstream res("../residuo-jacobi-secuencial-pores_1.dat");
+    fstream fs(_matriz);
     CSR matriz(fs);
 
-    cout << "Es diagonal dominante: " << (matriz.isDiagonallyDominant() ? "true" : "false") << endl;
-//    auto _b = rhsVector_reader<double>("../data/rhs-65x65.dat", matriz.getFilas());
-//    double *_x_k = rhsVector_reader<double>("../x0/x0-65x65.dat", matriz.getFilas());
+//    cout << "Es diagonal dominante: " << (matriz.isDiagonallyDominant() ? "true" : "false") << endl;
+    auto _b = rhsVector_reader<double>(_rhs, matriz.getFilas());
+    double *_x_k = rhsVector_reader<double>(_x0, matriz.getFilas());
 
-//    CSR matriz(m._4, false);
-//    auto _b = b._4;
 //    if (matriz.isPrecondicionada())
 //        for (int i = 0; i < matriz.getFilas(); i++) _b[i] = _b[i] / matriz.getDiagonal()[i];
     double *_x_kp1 = new double[matriz.getFilas()];         // Vector de salida iteración
@@ -106,10 +97,10 @@ void jacobi_secuencial() {
     const double tolerance = 1.e-8;
 
 // initial seed
-    double *_b = new double[matriz.getFilas()];
-    for (int i = 0; i < matriz.getFilas(); i++) _b[i] = 1;
-    double *_x_k = new double[matriz.getFilas()];
-    for (int i = 0; i < matriz.getFilas(); i++) _x_k[i] = 0;
+//    double *_b = new double[matriz.getFilas()];
+//    for (int i = 0; i < matriz.getFilas(); i++) _b[i] = 1;
+//    double *_x_k = new double[matriz.getFilas()];
+//    for (int i = 0; i < matriz.getFilas(); i++) _x_k[i] = 0;
     int iter;
 
     for (iter = 0; residual > tolerance; ++iter) {
@@ -132,7 +123,6 @@ void jacobi_secuencial() {
             residual = (fabs(_residual_vec[line]) > residual ? fabs(_residual_vec[line]) : residual);
             max_x_k = (fabs(_x_kp1[line]) > max_x_k ? fabs(_x_kp1[line]) : max_x_k);
         }
-        res << "residual: " << residual << "  max_x: " << max_x_k << "\n";
         residual = residual / max_x_k;
         // transfer _x_kp1 into _x_k
         double *tmp;
@@ -142,28 +132,19 @@ void jacobi_secuencial() {
 
     }
     printResult(iter, _x_k, nullptr, _b, matriz.getFilas());
-    res.close();
 }
 
-void srj_secuencial() {
+void srj_secuencial(string _matriz, string _rhs, string _x0, string _srjSch) {
     cout << "SRJ secuencial*****//" << endl;
-    fstream fs("../data/matrix-129x65.mtx");
-    ofstream res("../residuo-srj-secuencial-129x65.dat");
+    fstream fs(_matriz);
     CSR matriz(fs);
-    auto _b = rhsVector_reader<double>("../data/rhs-129x65.dat", matriz.getFilas());
-//    double *_b = new double[matriz.getFilas()];
-//    for (int i = 0; i < matriz.getFilas(); i++) _b[i] = 1;
-//    CSR matriz(m._4);
-//    auto _b = b._4;
-    double *_x_k = rhsVector_reader<double>("../x0/x0-129x65.dat", matriz.getFilas()); // Vector de entrada iteración
+    auto _b = rhsVector_reader<double>(_rhs, matriz.getFilas());
+    double *_x_k = rhsVector_reader<double>(_x0, matriz.getFilas()); // Vector de entrada iteración
     double *_x_kp1 = new double[matriz.getFilas()];         // Vector de salida iteración
     double *_residual_vec = new double[matriz.getFilas()];  // Vector de residuo
-    auto srjSch = srjSch_reader<double>("../srjSch/P9_32.srj");
+    auto srjSch = srjSch_reader<double>(_srjSch);
     double residual = 1.e36;
     const double tolerance = 1.e-8;
-
-// initial seed
-//    for (int i = 0; i < matriz.getFilas(); i++) _x_k[i] = 0;
     int iter;
 
     for (iter = 0; residual > tolerance; ++iter) {
@@ -187,9 +168,7 @@ void srj_secuencial() {
                                                              : residual);
             max_x_k = (fabs(_x_kp1[line]) > max_x_k ? fabs(_x_kp1[line]) : max_x_k);
         }
-        res << "residual: " << residual << "  max_x: " << max_x_k << "\n";
         residual = residual / max_x_k;
-        if (iter % 1000 == 0) cout << "iter: " << iter << " residuo " << residual << endl;
         // transfer _x_kp1 into _x_k
         double *tmp;
         tmp = _x_k;
@@ -198,32 +177,24 @@ void srj_secuencial() {
 
     }
     printResult(iter, _x_k, nullptr, _b, matriz.getFilas());
-    res.close();
 }
 
-void SOR_CSR() {
+void SOR_CSR(string _matriz, string _rhs, string _x0, double omega) {
     cout << "SOR CSR *****///" << endl;
-    fstream fs("../data/matrix-65x65.mtx");
-//    CSR matriz(fs);
-//    cout << "Es diagonal dominante: " << (matriz.isDiagonallyDominant() ? "true" : "false") << endl;
-//    auto _b = rhsVector_reader<double>("../data/rhs-65x65.dat", matriz.getFilas());
-//        double *_b = new double[matriz.getFilas()];
-//    for (int i = 0; i < matriz.getFilas(); i++) _b[i] = 0;
-    CSR matriz(m._3);
-    matriz.printMatrix();
-    double *_b = b._3_5;
-    double *_x_k = new double[matriz.getFilas()];           // Vector de entrada iteración
+    fstream fs(_matriz);
+    CSR matriz(fs);
+    auto _b = rhsVector_reader<double>(_rhs, matriz.getFilas());
+    double *_x_k = rhsVector_reader<double>(_x0, matriz.getFilas());           // Vector de entrada iteración
     double *_residual_vec = new double[matriz.getFilas()];  // Vector de residuo
 
-    double omega = 0.1;
     const double tolerance = 1.e-8;
 
     int iter;
-    for (; omega < 1.4; omega += 0.05) {
-        double residual = 1.e36;
-        for (int i = 0; i < matriz.getFilas(); i++) _x_k[i] = 0;
+//    for (; omega < 1.4; omega += 0.05) {
+    double residual = 1.e36;
+    for (int i = 0; i < matriz.getFilas(); i++) _x_k[i] = 0;
 
-        for (iter = 0; (residual > tolerance); ++iter) {
+    for (iter = 0; (residual > tolerance); ++iter) {
             // Matrix-Vector Product Matrix_2d *x_k and compute residual vector
             for (int line = 0; line < matriz.getFilas(); ++line) {
                 double sum = 0;
@@ -246,14 +217,14 @@ void SOR_CSR() {
                 }
                 _residual_vec[line] = sum - _b[line];
             }
-            double sum_cuadrados = 0;
-            for (size_t i = 0; i < matriz.getFilas(); i++) {
-                sum_cuadrados += pow(_residual_vec[i], 2);
-            }
-            residual = sqrt(sum_cuadrados);
+        double sum_cuadrados = 0;
+        for (size_t i = 0; i < matriz.getFilas(); i++) {
+            sum_cuadrados += pow(_residual_vec[i], 2);
         }
-        cout << "Omega: " << omega << " Iter: " << iter << endl;
+        residual = sqrt(sum_cuadrados);
     }
+//        cout << "Omega: " << omega << " Iter: " << iter << endl;
+//    }
     printResult(iter, _x_k, nullptr, _b, matriz.getFilas());
 }
 

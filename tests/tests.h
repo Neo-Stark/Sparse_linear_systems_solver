@@ -7,19 +7,19 @@
 #define SISTEMAS_LINEALES_TESTS_H
 
 // tests_jacobi
-void test_jacobi_CUDA();
+void test_jacobi_CUDA(string _matriz, string _rhs, string _x0);
 
-void test_jacobi_OMP();
+void test_jacobi_OMP(string _matriz, string _rhs, string _x0);
 
-void jacobi_secuencial();
+void jacobi_secuencial(string _matriz, string _rhs, string _x0);
 
 void jacobi_clasico();
 
-void SOR_CSR();
+void SOR_CSR(string _matriz, string _rhs, string _x0, double omega);
 
 void SOR();
 
-void srj_secuencial();
+void srj_secuencial(string _matriz, string _rhs, string _x0, string srjSch);
 
 void printResult(int iter, const int *x);
 
