@@ -20,15 +20,15 @@ public:
 
     double *multiplicacionMV_CUDA();
 
+    double *multiplicacionMV_OMP();
+
     virtual void obtenerNuevaX();
 
     void actualizaX();
 
-    double *multiplicacionMV_OMP();
-
     double norma();
 
-    double normaInfinito_r();
+    double norma_CUDA();
 
     void calculaResiduo(const double *b);
 
@@ -57,6 +57,10 @@ public:
     double getR(int i);
 
     double reduce_max_CUDA(const double *d_vi, int n) const;
+
+    double reduce_max_OMP(const double *v, int n);
+
+    double norma_OMP();
 
 protected:
     double *inversaDiagonal();

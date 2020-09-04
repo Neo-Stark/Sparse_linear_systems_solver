@@ -7,6 +7,7 @@
 #include <kernels.cuh>
 #include <iostream>
 #include <omp.h>
+#include "utilidades.h"
 
 
 jacobi::jacobi(const CSR &m, const vector<double> &aprox_inicial, const int &block_size_arg)
@@ -127,8 +128,7 @@ double jacobi::getInversa(int i) {
 double *jacobi::multiplicacionMV_OMP() {
 #pragma omp parallel
     {
-
-        cout << "multiplicando - Hebra " << omp_get_thread_num() << endl;
+//        cout << "multiplicando - Hebra " << omp_get_thread_num() << endl;
 #pragma omp for
         for (int i = 0; i < getFilas(); i++) {
             const unsigned int row_start = matriz.getRowPtr()[i];
@@ -154,13 +154,20 @@ void jacobi::actualizaX() {
     cudaMemcpy(x.data(), x_d, getColumnas() * sizeof(double), cudaMemcpyDeviceToHost);
 }
 
-double jacobi::normaInfinito_r() {
-    double r_max = reduce_max_CUDA(r_d, getFilas());
-    double x_max = reduce_max_CUDA(x_d, getFilas());
+double jacobi::norma_CUDA() {
+    double r_max = utilidades::reduce_max_CUDA(r_d, getFilas(), BLOCK_SIZE);
+    double x_max = utilidades::reduce_max_CUDA(x_d, getFilas(), BLOCK_SIZE);
     double norma = r_max / x_max;
 //    cout << "r_max: " << r_max;
 //    cout << "  x_max: " << x_max << endl;
 //    cout << " norma: " << norma << endl;
+    return norma;
+}
+
+double jacobi::norma_OMP() {
+    double r_max = utilidades::reduce_max_OMP(r, getFilas());
+    double x_max = utilidades::reduce_max_OMP(x.data(), getFilas());
+    double norma = r_max / x_max;
     return norma;
 }
 
@@ -176,42 +183,6 @@ jacobi::~jacobi() {
     cudaFree(col_ind);
     cudaFree(row_ptr);
     cudaFree(inversa_d);
-}
-
-double jacobi::reduce_max_CUDA(const double *d_vi, const int n) const {
-    dim3 block(BLOCK_SIZE);
-    dim3 grid = (n / 2 + block.x) / block.x;
-//    dim3 grid = 64;
-    auto smemSize = block.x * sizeof(double);
-    double *d_vo, *h_vo = new double[grid.x];
-    cudaMalloc(&d_vo, sizeof(double) * grid.x);
-    switch (BLOCK_SIZE) {
-        case 1024:
-            reduction_max<double, 1024><<< grid, block, smemSize >>>(d_vi, d_vo, n);
-            break;
-        case 512:
-            reduction_max<double, 512><<< grid, block, smemSize >>>(d_vi, d_vo, n);
-            break;
-        case 256:
-            reduction_max<double, 256><<< grid, block, smemSize >>>(d_vi, d_vo, n);
-            break;
-        case 128:
-            reduction_max<double, 128><<< grid, block, smemSize >>>(d_vi, d_vo, n);
-            break;
-        case 64:
-            reduction_max<double, 64><<< grid, block, smemSize >>>(d_vi, d_vo, n);
-            break;
-        case 32:
-            reduction_max<double, 32><<< grid, block, smemSize >>>(d_vi, d_vo, n);
-            break;
-    }
-    cudaMemcpy(h_vo, d_vo, sizeof(double) * grid.x, cudaMemcpyDeviceToHost);
-    double maximo = 0.0;
-    for (int i = 0; i < grid.x; i++) maximo = max(maximo, h_vo[i]);
-
-    cudaFree(d_vo);
-    free(h_vo);
-    return maximo;
 }
 
 double *jacobi::getR() const {

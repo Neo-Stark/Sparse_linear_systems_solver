@@ -6,7 +6,7 @@ set(CMAKE_CUDA_STANDARD 14)
 find_package(CUDA REQUIRED)
 find_package(OpenMP REQUIRED)
 
-add_library(jacobi jacobi.cu SRJ.cu include/SRJ.h)
+add_library(jacobi jacobi.cu SRJ.cu include/SRJ.h utilidades.cu utilidades.h jacobiCuda.cpp jacobiCuda.h)
 target_link_libraries(jacobi OpenMP::OpenMP_CXX)
 IF (OPENMP_FOUND)
     SET(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=${OpenMP_CXX_FLAGS}")
