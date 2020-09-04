@@ -72,7 +72,7 @@ __global__ void reduction_max(const T *g_idata, T *g_odata, unsigned int n) {
 //        sdata[tid] = max(abs(g_idata[i]), abs(g_idata[i + blockSize]));
 //        i += gridSize;
 //    }
-    if (i  < n && n > blockSize)
+    if (i + blockSize < n && n > blockSize)
         sdata[tid] = max(abs(g_idata[i]), abs(g_idata[i + blockSize]));
     else if (i < n)
         sdata[tid] = abs(g_idata[i]);
