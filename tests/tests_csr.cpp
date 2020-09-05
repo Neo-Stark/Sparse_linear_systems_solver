@@ -13,7 +13,7 @@ using namespace std;
 
 void test_diagonal() {
     CSR matriz(m._1);
-    jacobi test(matriz, BLOCKSIZE);
+    jacobi test(matriz);
     cout << "Diagonal: ";
     for (int i = 0; i < matriz.getFilas(); i++) cout << test.getDiagonal()[i] << " ";
     cout << endl;
@@ -59,7 +59,7 @@ void test_inversa() {
 }
 
 void test_constructor_csr() {
-    ifstream file("../data/cage5.mtx");
+    ifstream file("../data/matrix-65x65.mtx");
     CSR matriz(file);
     matriz.printMatrix();
 

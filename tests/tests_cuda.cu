@@ -4,12 +4,13 @@
 //
 
 #include "matrices_test.h"
-#include <kernels.cuh>
+#include <src/kernels.cuh>
 #include <readers.h>
 #include <CSR.h>
 #include <iostream>
 #include <jacobi.h>
-#include "cpu_seconds.h"
+#include <jacobiCuda.h>
+#include <utilidades.h>
 
 using namespace std;
 #define BLOCKSIZE 64
@@ -63,40 +64,34 @@ void test_reduce_max_wrapper(double *h_v, int n) {
     cudaMemcpy(dva, x, sizeof(double) * 4, cudaMemcpyHostToDevice);
     double t1, t2;
     cout.precision(20);
-    jacobi test32(CSR(m._1), 32);
-    t1 = cpuSecond();
-    auto maximo = test32.reduce_max_CUDA(d_vi, n);
-    t2 = cpuSecond() - t1;
+    t1 = utilidades::cpuSecond();
+    auto maximo = utilidades::reduce_max_CUDA(d_vi, n, 32);
+    t2 = utilidades::cpuSecond() - t1;
     cout << "test32   - Máximo: " << maximo << " tiempo " << t2 << endl;
 
-    jacobi test64(CSR(m._1), 64);
-    t1 = cpuSecond();
-    maximo = test64.reduce_max_CUDA(d_vi, n);
-    t2 = cpuSecond() - t1;
+    t1 = utilidades::cpuSecond();
+    maximo = utilidades::reduce_max_CUDA(d_vi, n, 64);
+    t2 = utilidades::cpuSecond() - t1;
     cout << "test64   - Máximo: " << maximo << " tiempo " << t2 << endl;
 
-    jacobi test128(CSR(m._1), 128);
-    t1 = cpuSecond();
-    maximo = test128.reduce_max_CUDA(d_vi, n);
-    t2 = cpuSecond() - t1;
+    t1 = utilidades::cpuSecond();
+    maximo = utilidades::reduce_max_CUDA(d_vi, n, 128);
+    t2 = utilidades::cpuSecond() - t1;
     cout << "test128  - Máximo: " << maximo << " tiempo " << t2 << endl;
 
-    jacobi test256(CSR(m._1), 256);
-    t1 = cpuSecond();
-    maximo = test256.reduce_max_CUDA(d_vi, n);
-    t2 = cpuSecond() - t1;
+    t1 = utilidades::cpuSecond();
+    maximo = utilidades::reduce_max_CUDA(d_vi, n, 256);
+    t2 = utilidades::cpuSecond() - t1;
     cout << "test256  - Máximo: " << maximo << " tiempo " << t2 << endl;
 
-    jacobi test512(CSR(m._1), 512);
-    t1 = cpuSecond();
-    maximo = test512.reduce_max_CUDA(d_vi, n);
-    t2 = cpuSecond() - t1;
+    t1 = utilidades::cpuSecond();
+    maximo = utilidades::reduce_max_CUDA(d_vi, n, 256);
+    t2 = utilidades::cpuSecond() - t1;
     cout << "test512  - Máximo: " << maximo << " tiempo " << t2 << endl;
 
-    jacobi test1024(CSR(m._1), 1024);
-    t1 = cpuSecond();
-    maximo = test1024.reduce_max_CUDA(d_vi, n);
-    t2 = cpuSecond() - t1;
+    t1 = utilidades::cpuSecond();
+    maximo = utilidades::reduce_max_CUDA(d_vi, n, 256);
+    t2 = utilidades::cpuSecond() - t1;
     cout << "test1024 - Máximo: " << maximo << " tiempo " << t2 << endl;
 
     cudaFree(d_vi);

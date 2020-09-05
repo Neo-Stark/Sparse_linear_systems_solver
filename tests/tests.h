@@ -6,22 +6,28 @@
 #ifndef SISTEMAS_LINEALES_TESTS_H
 #define SISTEMAS_LINEALES_TESTS_H
 
+#include "CSR.h"
+
 // tests_jacobi
-void test_jacobi_CUDA(string _matriz, string _rhs, string _x0);
+double test_jacobi_CUDA(CSR matriz, double *_b, string x0);
 
-void test_jacobi_OMP(string _matriz, string _rhs, string _x0);
+double test_jacobi_OMP(CSR matriz, double *_b, string x0);
 
-void jacobi_secuencial(string _matriz, string _rhs, string _x0);
+double jacobi_secuencial(CSR matriz, double *_b, string x0);
 
-void jacobi_clasico();
+double SOR(CSR matriz, double *_b, string x0, double omega);
 
-void SOR_CSR(string _matriz, string _rhs, string _x0, double omega);
+double SOR_CUDA(CSR matriz, double *_b, string x0, double omega);
 
-void SOR();
+double SOR_OMP(CSR matriz, double *_b, string x0, double omega);
 
-void srj_secuencial(string _matriz, string _rhs, string _x0, string srjSch);
+double srj_secuencial(CSR matriz, double *_b, string x0, string srjSch);
 
-void printResult(int iter, const int *x);
+double srj_CUDA(CSR matriz, double *_b, string x0, string srjSch);
+
+double srj_OMP(CSR matriz, double *_b, string x0, string srjSch);
+
+double printResult(int iter, const int *x);
 
 //tests_cuda
 void test_multiplicacion_cuda();
