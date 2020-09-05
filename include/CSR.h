@@ -26,7 +26,7 @@ class CSR {
 public:
     explicit CSR(istream &fin, bool precondicionar = false);
 
-    CSR(const CSR &m);
+//    CSR(const CSR &m);
 
     const vector<double> &getDiagonal() const;
 

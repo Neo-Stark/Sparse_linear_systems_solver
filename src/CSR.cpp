@@ -50,17 +50,6 @@ CSR::CSR(istream &fin, bool precondicionar) {
         precondicion = true;
         precondicionar_con_diagonal();
     }
-//
-//    ofstream ofile("matriz-4x4.mtx");
-//    ofile << filas << ' ' << columnas << ' ' << L << endl;
-//    for (auto columna = 0; columna < columnas; columna++) {
-//        for (int l = 0; l < L; l++) {
-//            if (col_cord[l] == columna) {
-//                ofile << row_cord[l] + 1 << ' ' << col_cord[l] + 1 << ' ' << val_cord[l] << endl;
-//            }
-//        }
-//    }
-//    ofile.close();
 }
 
 void CSR::printMatrix() {
@@ -114,14 +103,6 @@ int CSR::getBandwidth() {
         }
     }
     return bandwidth;
-}
-
-CSR::CSR(const CSR &m) {
-    this->val = m.val;
-    this->col_ind = m.col_ind;
-    this->row_ptr = m.row_ptr;
-    this->columnas = m.columnas;
-    this->filas = m.filas;
 }
 
 const vector<double> &CSR::getVal() const {
