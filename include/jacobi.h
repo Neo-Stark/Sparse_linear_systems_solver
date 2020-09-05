@@ -12,23 +12,19 @@ using namespace std;
 
 class jacobi {
 public:
-    explicit jacobi(const CSR &m, const vector<double> &aprox_inicial, const int &block_size_arg = 256);
+    explicit jacobi(const CSR &m, const vector<double> &aprox_inicial);
 
-    explicit jacobi(const CSR &m, const int &block_size_arg = 256);
+    explicit jacobi(const CSR &m);
 
-    ~jacobi();
+    virtual ~jacobi();
 
-    double *multiplicacionMV_CUDA();
-
-    double *multiplicacionMV_OMP();
+    virtual double *multiplicacionMV();
 
     virtual void obtenerNuevaX();
 
-    void actualizaX();
+    virtual void actualizaX();
 
-    double norma();
-
-    double norma_CUDA();
+    virtual double norma();
 
     void calculaResiduo(const double *b);
 
@@ -42,7 +38,7 @@ public:
 
     double getInversa(int i);
 
-    double *getDiagonal() const;
+    const vector<double> getDiagonal() const;
 
     double *getY();
 
@@ -56,12 +52,6 @@ public:
 
     double getR(int i);
 
-    double reduce_max_CUDA(const double *d_vi, int n) const;
-
-    double reduce_max_OMP(const double *v, int n);
-
-    double norma_OMP();
-
 protected:
     double *inversaDiagonal();
 
@@ -69,17 +59,11 @@ protected:
 
 
     CSR matriz;
-    double *diagonal;
     double *inversa;
     double *y;
     double *r;
-    vector<double> x;
+    vector<double> x, x_kp1;
 
-    // Punteros a memoria en GPU
-    double *A{}, *x_d{}, *y_d{}, *inversa_d{}, *r_d{};
-    unsigned int *col_ind{}, *row_ptr{};
-
-    const int BLOCK_SIZE;
 };
 
 #endif //JACOBI_H

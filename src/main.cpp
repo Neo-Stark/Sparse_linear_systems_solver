@@ -1,11 +1,11 @@
 #include <iostream>
 #include <jacobi.h>
 #include <readers.h>
-#include <cpu_seconds.h>
 #include <iomanip>
 #include <fstream>
 #include <omp.h>
-#include <SRJ.h>
+#include <SRJ_CUDA.h>
+#include "utilidades.h"
 
 #define BLOCK_SIZE 128
 #define K 1000000
@@ -22,26 +22,26 @@ int main(int argc, char **argv) {
 //    auto _b = rhsVector_reader<double>(argv[2], matriz.getFilas());
     auto _b = vector<double>(matriz.getFilas(), 0);
     int k = 0;
-    double t1 = cpuSecond();
+    double t1 = utilidades::cpuSecond();
 
     jacobi *test;
     if (argc == 4) {
         auto srjSch = srjSch_reader<double>(argv[3]);
-        test = new SRJ(matriz, srjSch, BLOCK_SIZE);
+        test = new SRJ_CUDA(matriz, srjSch, BLOCK_SIZE);
     } else
-        test = new jacobi(matriz, BLOCK_SIZE);
+        test = new jacobi_CUDA(matriz, BLOCK_SIZE);
 
     double residual = 1e36;
     while (residual > THRESHOLD) {
-        auto y1500 = test->multiplicacionMV_CUDA()[1500];
+        test->multiplicacionMV();
         test->calculaResiduo(_b.data());
         test->obtenerNuevaX();
-        residual = test->norma_CUDA();
+        residual = test->norma();
         test->actualizaX();
         if (k % 1000 == 0) cout << "k: " << k << " residuo " << residual << " y1500 " << y1500 << endl;
         k++;
     }
-    double t2 = cpuSecond() - t1;
+    double t2 = utilidades::cpuSecond() - t1;
 
 
     string file(argv[1]);
