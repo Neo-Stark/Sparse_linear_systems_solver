@@ -8,6 +8,8 @@
 #include "utilidades.h"
 #include "algorithm"
 #include "kernels.cuh"
+#include <sys/time.h>
+
 
 using namespace std;
 
@@ -15,7 +17,7 @@ double utilidades::reduce_max_OMP(const double *v, int n) {
     double maximo = -1e36;
 #pragma omp parallel for reduction (max : maximo)
     for (int i = 0; i < n; i++) {
-        maximo = max(maximo, v[i]);
+        maximo = max(maximo, abs(v[i]));
     }
     return maximo;
 }
@@ -54,5 +56,20 @@ double utilidades::reduce_max_CUDA(const double *d_vi, int n, const int BLOCK_SI
     free(h_vo);
     return maximo;
 }
+
+double utilidades::reduce_max_sec(const double *v, int n) {
+    double maximo = 0;
+    for (int line = 0; line < n; ++line) {
+        maximo = (fabs(v[line]) > maximo ? fabs(v[line]) : maximo);
+    }
+    return maximo;
+}
+
+double utilidades::cpuSecond() {
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    return ((double) tp.tv_sec + (double) tp.tv_usec * 1e-6);
+}
+
 
 #pragma clang diagnostic pop

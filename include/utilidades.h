@@ -12,6 +12,10 @@ public:
     static double reduce_max_OMP(const double *v, int n);
 
     static double reduce_max_CUDA(const double *d_vi, int n, const int BLOCK_SIZE);
+
+    static double reduce_max_sec(const double *v, int n);
+
+    static double cpuSecond();
 };
 
 
